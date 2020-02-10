@@ -30,6 +30,7 @@ test-driver
 .libs
 .deps
 .dirstamp
+result
 
 # Softlinks to test and log
 log
