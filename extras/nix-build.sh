@@ -5,4 +5,4 @@ nix-build -E \
       src = $PWD;
     };
   }
-).glusterfsDev"
+).glusterfsDev" $@

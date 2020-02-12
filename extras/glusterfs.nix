@@ -4,13 +4,12 @@
 { src }:
 {
   packageOverrides = pkgs: {
-    glusterfsDev = pkgs.glusterfs.overrideDerivation (oldAttrs: {
+    glusterfsDev = (pkgs.callPackage ./glusterfs-pkg.nix {}).overrideDerivation (oldAttrs: {
 
       inherit src;
 
       name = "glusterfs-8dev";
       patches = [];
-      buildInputs = oldAttrs.buildInputs ++ [ pkgs.libtirpc ];
 
       #
       # install tests into the derivation so we can
