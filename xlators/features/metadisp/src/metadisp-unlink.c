@@ -23,7 +23,12 @@ metadisp_unlink_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
                     int32_t op_ret, int32_t op_errno, struct iatt *preparent,
                     struct iatt *postparent, dict_t *xdata)
 {
+    METADISP_TRACE(". %d %d", op_ret, op_errno);
+
+    int ret = 0;
     call_stub_t *stub = NULL;
+    int nlink = 0;
+
     if (cookie) {
         stub = cookie;
     }
@@ -36,6 +41,12 @@ metadisp_unlink_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
         call_stub_destroy(stub);
         stub = NULL;
         return 0;
+    }
+
+    ret = dict_get_uint32(xdata, GF_RESPONSE_LINK_COUNT_XDATA, &nlink);
+    METADISP_TRACE("frontend hardlink count %d %d", ret, nlink);
+    if (nlink > 1) {
+        goto unwind;
     }
 
     call_resume(stub);
@@ -118,8 +129,20 @@ metadisp_unlink(call_frame_t *frame, xlator_t *this, loc_t *loc, int xflag,
         goto unwind;
     }
 
-    METADISP_TRACE("winding frontend unlink to path %s", loc->path);
+    //
+    // ensure we get the link count on the unlink response, so we can
+    // account for hardlinks before winding to the backend.
+    // NOTE:
+    //   multiple xlators use GF_REQUEST_LINK_COUNT_XDATA. confirmation
+    //   is needed to ensure that multiple requests will work in the same
+    //   xlator stack.
+    //
+    if (!xdata) {
+        xdata = dict_new();
+    }
+    dict_set_int32(xdata, GF_REQUEST_LINK_COUNT_XDATA, 1);
 
+    METADISP_TRACE("winding frontend unlink to path %s", loc->path);
     stub = fop_unlink_stub(frame, metadisp_unlink_resume, &backend_loc, xflag,
                            xdata);
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 . $(dirname $0)/../../include.rc
 . $(dirname $0)/../../volume.rc
@@ -215,6 +215,18 @@ EXPECT "OK" test_hardlink 6
 EXPECT "OK" test_hardlink 7
 EXPECT "OK" test_hardlink 8
 EXPECT "OK" test_hardlink 9
+
+# Test remove hardlink source. ensure deleting one file
+# doesn't delete the data unless link-count is 1
+TEST mkdir $M0/hardlink
+TEST touch $M0/hardlink/fileA
+echo "data" >> $M0/hardlink/fileA
+checksum=$(md5sum $M0/hardlink/fileA | awk '{print $1}')
+TEST ln $M0/hardlink/fileA $M0/hardlink/fileB
+TEST [ $(dir -1 $M0/hardlink/ | wc -l) -eq 2 ]
+TEST rm $M0/hardlink/fileA
+TEST [ $(dir -1 $M0/hardlink/ | wc -l) -eq 1 ]
+TEST [ "$(md5sum $M0/hardlink/fileB | awk '{print $1}')" == "$checksum" ]
 
 #
 # FIXME: statfs values look ok but the test is bad
