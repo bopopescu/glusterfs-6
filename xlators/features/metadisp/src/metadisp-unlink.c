@@ -44,6 +44,11 @@ metadisp_unlink_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
     }
 
     ret = dict_get_uint32(xdata, GF_RESPONSE_LINK_COUNT_XDATA, &nlink);
+    if (ret != 0) {
+        op_err = EINVAL;
+        op_ret = -1;
+        goto unwind;
+    }
     METADISP_TRACE("frontend hardlink count %d %d", ret, nlink);
     if (nlink > 1) {
         goto unwind;
