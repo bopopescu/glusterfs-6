@@ -87,7 +87,8 @@ stdenv.mkDerivation
     '';
 
   configureFlags = [
-    ''--localstatedir=/var''
+    ''--localstatedir=/var
+      --enable-metadisp''
     ];
 
   makeFlags = [ "DESTDIR=$(out)" ];
