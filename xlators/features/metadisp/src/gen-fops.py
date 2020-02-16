@@ -36,7 +36,11 @@ metadisp_@NAME@ (call_frame_t *frame, xlator_t *this,
 {
   METADISP_TRACE("@NAME@ datafd");
   xlator_t *child = NULL;
-  child = DATA_CHILD(this);
+  if (fd->inode->ia_type == IA_IFREG) {
+      child = DATA_CHILD(this);
+  } else {
+      child = METADATA_CHILD(this);
+  }
   STACK_WIND (frame, default_@NAME@_cbk,
                           child, child->fops->@NAME@,
                           @SHORT_ARGS@);
